@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="720" viewBox="0 0 1920 720">
+  <defs>
+    <linearGradient id="floor" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#183943" stop-opacity=".74"/>
+      <stop offset=".12" stop-color="#08141b" stop-opacity=".82"/>
+      <stop offset="1" stop-color="#03070b" stop-opacity=".96"/>
+    </linearGradient>
+    <filter id="violet"><feGaussianBlur stdDeviation="9"/></filter>
+  </defs>
+  <path d="M0 610H1920V720H0Z" fill="url(#floor)"/>
+  <path d="M0 610H1920" stroke="#5cd8da" stroke-width="3" opacity=".38"/>
+  <path d="M0 627H1920" stroke="#0d242e" stroke-width="5" opacity=".9"/>
+  <g fill="#7d3bba" opacity=".34" filter="url(#violet)">
+    <ellipse cx="500" cy="620" rx="110" ry="12"/><ellipse cx="1450" cy="620" rx="130" ry="14"/>
+  </g>
+  <g fill="#132b34" stroke="#32616b" stroke-width="2" opacity=".86">
+    <path d="M15 610l38-58h42l25 58zM1780 610l28-68h58l40 68z"/>
+  </g>
+  <g data-climbable-id="shadow-trial-rope" data-climbable-kind="rope" data-climbable-x="400" data-climbable-top="438" data-climbable-bottom="610" data-climbable-width="14">
+    <path d="M400 438V610" stroke="#071015" stroke-width="7"/>
+    <path d="M400 438V610" stroke="#315f69" stroke-width="4"/>
+    <path d="M399 438V610" stroke="#62d3d2" stroke-width="1" opacity=".76"/>
+    <path d="M394 450h12M394 464h12M394 478h12M394 492h12M394 506h12M394 520h12M394 534h12M394 548h12M394 562h12M394 576h12M394 590h12M394 604h12" stroke="#7d3bba" stroke-width="4"/>
+  </g>
+</svg>

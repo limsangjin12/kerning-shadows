@@ -1,0 +1,840 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no"
+    />
+    <meta name="theme-color" content="#111b28" />
+    <title>Kerning Shadows</title>
+  </head>
+  <body>
+    <main id="app" aria-label="Kerning Shadows 게임 데모">
+      <div
+        id="game"
+        data-active-scene="boot"
+        data-active-map=""
+        data-assets-ready="false"
+        aria-label="게임 화면"
+      ></div>
+      <p
+        class="initial-audio-notice"
+        data-testid="initial-audio-notice"
+        role="status"
+        aria-live="polite"
+      >
+        <span class="initial-audio-notice__line"
+          >이 게임은 PC 환경에 최적화되어 있습니다.</span
+        >
+        <span class="initial-audio-notice__line"
+          >BGM과 함께 플레이하려면 매너모드를 해제해주세요</span
+        >
+      </p>
+      <div id="screen-overlay" hidden></div>
+      <div id="hud-window-controls" aria-label="HUD 창 표시 설정">
+        <button
+          type="button"
+          data-hud-panel="miniMap"
+          aria-expanded="true"
+          aria-label="미니맵 접기"
+        >
+          −
+        </button>
+        <button
+          type="button"
+          data-hud-panel="quest"
+          aria-expanded="true"
+          aria-label="퀘스트 알림 접기"
+        >
+          −
+        </button>
+        <button
+          type="button"
+          data-hud-panel="controls"
+          aria-expanded="true"
+          aria-label="조작 안내 접기"
+        >
+          −
+        </button>
+      </div>
+      <div
+        id="game-status"
+        class="visually-hidden"
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+      ></div>
+    </main>
+    <template id="game-menu-template">
+      <section
+        class="game-menu-dialog ui-panel ui-panel--metal"
+        data-testid="game-menu-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="game-menu-title"
+      >
+        <header class="game-menu-header">
+          <div>
+            <p class="eyebrow">GAME MENU</p>
+            <h2 id="game-menu-title">전체 메뉴</h2>
+          </div>
+          <button type="button" class="secondary" data-testid="game-menu-close">
+            게임으로 돌아가기
+          </button>
+        </header>
+        <p class="game-menu-summary"></p>
+        <nav class="game-menu-grid" aria-label="게임 메뉴 항목">
+          <button
+            type="button"
+            class="game-menu-entry"
+            data-testid="menu-inventory"
+          >
+            <strong>인벤토리</strong><span>아이템 확인과 소모품 사용</span>
+          </button>
+          <button
+            type="button"
+            class="game-menu-entry"
+            data-testid="menu-stats"
+          >
+            <strong>스탯 · 장비</strong><span>능력치 분배와 표창 장착</span>
+          </button>
+          <button
+            type="button"
+            class="game-menu-entry"
+            data-testid="menu-skills"
+          >
+            <strong>스킬</strong><span>스킬 확인과 SP 분배</span>
+          </button>
+          <button
+            type="button"
+            class="game-menu-entry"
+            data-testid="menu-skill-hotkeys"
+          >
+            <strong>스킬 단축키</strong
+            ><span>숫자·Shift·QWER·ASDF·XCV 배치</span>
+          </button>
+          <button
+            type="button"
+            class="game-menu-entry"
+            data-testid="menu-settings"
+          >
+            <strong>환경설정</strong><span>BGM · 효과음 · 음소거</span>
+          </button>
+        </nav>
+        <p class="game-menu-help">
+          ESC로 메뉴를 닫습니다 · 기존 I / S / K 단축키도 그대로 사용할 수
+          있습니다.
+        </p>
+      </section>
+    </template>
+    <template id="settings-dialog-template">
+      <section
+        class="settings-dialog ui-panel ui-panel--metal"
+        data-testid="settings-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="settings-dialog-title"
+      >
+        <p class="eyebrow">SETTINGS</p>
+        <h2 id="settings-dialog-title">환경설정</h2>
+        <div data-audio-settings-slot></div>
+        <div class="screen-actions">
+          <button type="button" class="secondary" data-testid="settings-close">
+            닫기
+          </button>
+        </div>
+      </section>
+    </template>
+    <template id="audio-settings-template">
+      <section
+        class="audio-settings-panel"
+        aria-labelledby="audio-settings-title"
+      >
+        <strong id="audio-settings-title">사운드</strong>
+        <button
+          type="button"
+          class="audio-mute-toggle secondary"
+          data-testid="audio-mute-toggle"
+        ></button>
+        <label class="audio-volume-control"
+          ><span>배경음</span
+          ><input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            data-testid="audio-bgm-volume" /><output></output
+        ></label>
+        <label class="audio-volume-control"
+          ><span>효과음</span
+          ><input
+            type="range"
+            min="0"
+            max="100"
+            step="1"
+            data-testid="audio-sfx-volume" /><output></output
+        ></label>
+        <small>설정은 이 브라우저에 자동 저장됩니다.</small>
+      </section>
+    </template>
+    <template id="skill-hotkey-dialog-template">
+      <section
+        class="skill-hotkey-dialog ui-panel ui-panel--metal"
+        data-testid="skill-hotkey-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="skill-hotkey-dialog-title"
+      >
+        <header class="skill-hotkey-dialog-header">
+          <div>
+            <p class="eyebrow">SKILL HOTKEYS</p>
+            <h2 id="skill-hotkey-dialog-title">스킬 단축키 배치</h2>
+          </div>
+          <button
+            type="button"
+            class="secondary"
+            data-testid="skill-hotkey-close"
+          >
+            닫기
+          </button>
+        </header>
+        <p class="skill-hotkey-dialog-help">
+          숫자/HUD 또는 추가 키를 고른 뒤 스킬을 선택하세요. 같은 영역에서는
+          드래그나 Alt+←/→로도 교환할 수 있습니다.
+        </p>
+        <section
+          class="skill-hotbar-editor skill-hotbar-editor--standalone"
+          aria-labelledby="number-skill-hotkeys-title"
+        >
+          <h3 id="number-skill-hotkeys-title">숫자 · HUD 슬롯</h3>
+          <div class="skill-hotbar-slots">
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="1"
+              data-testid="skill-hotbar-slot-1"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>1</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="2"
+              data-testid="skill-hotbar-slot-2"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>2</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="3"
+              data-testid="skill-hotbar-slot-3"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>3</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="4"
+              data-testid="skill-hotbar-slot-4"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>4</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="5"
+              data-testid="skill-hotbar-slot-5"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>5</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="6"
+              data-testid="skill-hotbar-slot-6"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>6</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="7"
+              data-testid="skill-hotbar-slot-7"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>7</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="8"
+              data-testid="skill-hotbar-slot-8"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>8</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="9"
+              data-testid="skill-hotbar-slot-9"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>9</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="0"
+              data-testid="skill-hotbar-slot-0"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>0</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="number"
+              data-hotkey="-"
+              data-testid="skill-hotbar-slot--"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>-</kbd>
+            </button>
+          </div>
+        </section>
+        <section
+          class="skill-hotbar-editor skill-extra-hotbar-editor"
+          aria-labelledby="extra-skill-hotkeys-title"
+        >
+          <h3 id="extra-skill-hotkeys-title">추가 키</h3>
+          <div class="skill-extra-hotbar-slots">
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="Shift"
+              data-testid="skill-hotbar-slot-extra-Shift"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>Shift</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="Q"
+              data-testid="skill-hotbar-slot-extra-Q"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>Q</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="W"
+              data-testid="skill-hotbar-slot-extra-W"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>W</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="E"
+              data-testid="skill-hotbar-slot-extra-E"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>E</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="R"
+              data-testid="skill-hotbar-slot-extra-R"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>R</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="A"
+              data-testid="skill-hotbar-slot-extra-A"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>A</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="S"
+              data-testid="skill-hotbar-slot-extra-S"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>S</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="D"
+              data-testid="skill-hotbar-slot-extra-D"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>D</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="F"
+              data-testid="skill-hotbar-slot-extra-F"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>F</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="X"
+              data-testid="skill-hotbar-slot-extra-X"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>X</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="C"
+              data-testid="skill-hotbar-slot-extra-C"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>C</kbd>
+            </button>
+            <button
+              type="button"
+              class="skill-hotbar-slot"
+              draggable="true"
+              data-hotkey-kind="extra"
+              data-hotkey="V"
+              data-testid="skill-hotbar-slot-extra-V"
+            >
+              <img
+                alt=""
+                width="42"
+                height="42"
+                draggable="false"
+                aria-hidden="true"
+              /><kbd>V</kbd>
+            </button>
+          </div>
+        </section>
+        <div class="skill-hotkey-picker-header">
+          <h3 id="skill-hotkey-picker-title">배치할 스킬</h3>
+          <button
+            type="button"
+            class="secondary"
+            data-testid="skill-hotkey-clear"
+          >
+            선택한 추가 키 비우기
+          </button>
+        </div>
+        <div
+          class="skill-hotkey-picker"
+          aria-labelledby="skill-hotkey-picker-title"
+        >
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="luckySeven"
+            data-testid="skill-hotkey-choice-luckySeven"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>럭키세븐</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="shadowVolley"
+            data-testid="skill-hotkey-choice-shadowVolley"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>그림자 연사</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="drain"
+            data-testid="skill-hotkey-choice-drain"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>드레인</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="phantomStars"
+            data-testid="skill-hotkey-choice-phantomStars"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>환영 쌍성</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="avenger"
+            data-testid="skill-hotkey-choice-avenger"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>어벤저</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="abyssRain"
+            data-testid="skill-hotkey-choice-abyssRain"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>심연 폭우</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="rasengan"
+            data-testid="skill-hotkey-choice-rasengan"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>나선환</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="nineTailsTransformation"
+            data-testid="skill-hotkey-choice-nineTailsTransformation"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>구미호 변신</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="tailedBeastBomb"
+            data-testid="skill-hotkey-choice-tailedBeastBomb"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>미수옥</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="teamAssault"
+            data-testid="skill-hotkey-choice-teamAssault"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>삼인 협공</strong><small></small
+            ></span>
+          </button>
+          <button
+            type="button"
+            class="skill-hotkey-choice"
+            data-skill-id="thunderOrb"
+            data-testid="skill-hotkey-choice-thunderOrb"
+          >
+            <img alt="" width="44" height="44" aria-hidden="true" /><span
+              ><strong>천뢰옥</strong><small></small
+            ></span>
+          </button>
+        </div>
+      </section>
+    </template>
+    <template id="mobile-game-controls-template">
+      <section
+        class="mobile-game-controls"
+        data-testid="mobile-game-controls"
+        aria-label="모바일 게임 조작"
+      >
+        <button
+          type="button"
+          class="mobile-joystick"
+          data-testid="mobile-movement-joystick"
+          aria-label="좌우 이동 조이스틱"
+        >
+          <span class="mobile-joystick-ring"></span>
+          <span class="mobile-joystick-knob"></span>
+          <span class="mobile-joystick-hint">← 이동 → · ↓+점프 하강</span>
+        </button>
+        <div class="mobile-action-controls" aria-label="공격과 스킬">
+          <div class="mobile-skill-controls">
+            <button
+              type="button"
+              class="mobile-action-button mobile-skill-button"
+              data-testid="mobile-skill-1"
+            >
+              <img class="mobile-skill-icon" alt="" aria-hidden="true" /><span
+                class="mobile-action-label"
+              ></span>
+            </button>
+            <button
+              type="button"
+              class="mobile-action-button mobile-skill-button"
+              data-testid="mobile-skill-2"
+            >
+              <img class="mobile-skill-icon" alt="" aria-hidden="true" /><span
+                class="mobile-action-label"
+              ></span>
+            </button>
+            <button
+              type="button"
+              class="mobile-action-button mobile-skill-button"
+              data-testid="mobile-skill-3"
+            >
+              <img class="mobile-skill-icon" alt="" aria-hidden="true" /><span
+                class="mobile-action-label"
+              ></span>
+            </button>
+            <button
+              type="button"
+              class="mobile-action-button mobile-skill-button"
+              data-testid="mobile-skill-4"
+            >
+              <img class="mobile-skill-icon" alt="" aria-hidden="true" /><span
+                class="mobile-action-label"
+              ></span>
+            </button>
+          </div>
+          <div class="mobile-utility-controls">
+            <button
+              type="button"
+              class="mobile-action-button mobile-dialog-button"
+              data-testid="mobile-dialog"
+              data-action="interact"
+              aria-label="NPC와 대화"
+              hidden
+            >
+              <span class="mobile-action-symbol" aria-hidden="true">…</span
+              ><span class="mobile-action-label">대화</span>
+            </button>
+            <button
+              type="button"
+              class="mobile-action-button mobile-move-button"
+              data-testid="mobile-move"
+              data-action="interact"
+              aria-label="이동"
+              hidden
+            >
+              <span class="mobile-action-symbol" aria-hidden="true">↥</span
+              ><span class="mobile-action-label">이동</span>
+            </button>
+            <button
+              type="button"
+              class="mobile-action-button mobile-loot-button"
+              data-testid="mobile-loot"
+              data-action="loot"
+              aria-label="아이템과 메소 줍기"
+            >
+              <span class="mobile-action-symbol" aria-hidden="true">◆</span
+              ><span class="mobile-action-label">줍기</span>
+            </button>
+            <button
+              type="button"
+              class="mobile-action-button mobile-jump-button"
+              data-testid="mobile-jump"
+              data-action="jump"
+              aria-label="점프"
+            >
+              <span class="mobile-action-symbol" aria-hidden="true">↑</span
+              ><span class="mobile-action-label">점프</span>
+            </button>
+            <button
+              type="button"
+              class="mobile-action-button mobile-attack-button"
+              data-testid="mobile-basic-attack"
+              data-action="basicAttack"
+              aria-label="기본 공격"
+            >
+              <span class="mobile-action-symbol" aria-hidden="true">⚔</span
+              ><span class="mobile-action-label">공격</span>
+            </button>
+          </div>
+        </div>
+        <button
+          type="button"
+          class="mobile-menu-button"
+          data-testid="mobile-menu"
+          aria-label="전체 메뉴 열기"
+        >
+          MENU
+        </button>
+      </section>
+    </template>
+    <noscript>이 게임을 실행하려면 JavaScript가 필요합니다.</noscript>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

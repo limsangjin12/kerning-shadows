@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="192" height="96" viewBox="0 0 192 96" fill="none" shape-rendering="geometricPrecision">
+  <title>Directional air shockwave for the final boss punch</title>
+  <path d="M18 48C69 43 112 24 176 7C151 27 138 40 135 48C138 56 151 69 176 89C112 72 69 53 18 48Z" fill="#DDFBFF" fill-opacity="0.12"/>
+  <path d="M112 10Q178 48 112 86" stroke="#F8FFFF" stroke-width="7" stroke-linecap="square" stroke-linejoin="bevel"/>
+  <path d="M87 19Q151 48 87 77" stroke="#8DEBFF" stroke-width="5" stroke-linecap="square" stroke-linejoin="bevel"/>
+  <path d="M63 29Q124 48 63 67" stroke="#FFFFFF" stroke-width="3" stroke-linecap="square" stroke-linejoin="bevel"/>
+  <path d="M9 42H54L41 47H9V42ZM20 53H70L55 58H20V53ZM48 25H82L69 30H48V25ZM48 66H82L69 71H48V66Z" fill="#B9F5FF"/>
+  <path d="M148 19L178 8L160 28L148 19ZM148 77L178 88L160 68L148 77Z" fill="#FFFFFF" fill-opacity="0.72"/>
+</svg>

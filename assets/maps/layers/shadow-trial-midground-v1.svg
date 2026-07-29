@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="720" viewBox="0 0 1920 720">
+  <defs>
+    <linearGradient id="mist" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#152b38" stop-opacity="0"/>
+      <stop offset="1" stop-color="#16394b" stop-opacity=".42"/>
+    </linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <path d="M0 535 C240 490 420 560 660 515 S1080 500 1320 530 S1680 490 1920 525 V720 H0Z" fill="url(#mist)"/>
+  <g fill="none" stroke="#35d8e9" stroke-width="5" opacity=".18" filter="url(#glow)">
+    <path d="M270 190l34 55-34 55-34-55zM960 130l42 68-42 68-42-68zM1650 190l34 55-34 55-34-55z"/>
+  </g>
+  <g fill="none" stroke="#4ce4ef" stroke-width="2" opacity=".42">
+    <path d="M270 190l34 55-34 55-34-55zM960 130l42 68-42 68-42-68zM1650 190l34 55-34 55-34-55z"/>
+    <path d="M270 214v63m-18-32h36M960 161v74m-22-37h44M1650 214v63m-18-32h36"/>
+  </g>
+  <g stroke="#090d13" stroke-width="9" opacity=".72">
+    <path d="M120 0v245m0-198l-25 20m25 28l25 20m-25 28l-25 20m25 28l25 20M1810 0v260m0-205l-25 20m25 28l25 20m-25 28l-25 20m25 28l25 20"/>
+  </g>
+</svg>
