@@ -45,11 +45,11 @@ export function validateCharacterName(rawName: string): CharacterNameValidation 
       message: `닉네임은 ${CHARACTER_NAME_MIN_LENGTH}~${CHARACTER_NAME_MAX_LENGTH}자로 입력하세요.`,
     };
   }
-  if (!/^[가-힣A-Za-z0-9]+$/u.test(name)) {
+  if (!/^[\p{Script=Hangul}A-Za-z0-9]+$/u.test(name)) {
     return {
       valid: false,
       name,
-      message: "닉네임에는 한글, 영문, 숫자만 사용할 수 있습니다.",
+      message: "닉네임에는 한글 음절·자모, 영문, 숫자만 사용할 수 있습니다.",
     };
   }
   return { valid: true, name, message: "사용할 수 있는 닉네임입니다." };

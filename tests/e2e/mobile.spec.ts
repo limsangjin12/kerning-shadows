@@ -143,6 +143,46 @@ async function expectControlLeftOf(
   ).toBeLessThan(rightBounds!.x);
 }
 
+test("focuses the nickname field from an empty slot tap and accepts Korean jamo", async ({
+  page,
+}) => {
+  const failures = monitorBrowserFailures(page);
+  await page.goto("/");
+  await expect(page.locator(GAME)).toHaveAttribute("data-assets-ready", "true");
+  await page.getByTestId("account-id").fill("mobile-name-focus-qa");
+  await page.getByTestId("password").fill("local-only");
+  await page.getByTestId("login-submit").tap();
+  await expect(page.locator(GAME)).toHaveAttribute(
+    "data-active-scene",
+    "character-create",
+  );
+  await page.getByTestId("character-name").fill("첫캐릭터");
+  await page.getByTestId("create-character").tap();
+  await expect(page.locator(GAME)).toHaveAttribute(
+    "data-active-scene",
+    "character-select",
+  );
+
+  await page.getByTestId("character-slot-2").tap();
+  await expect(page.locator(GAME)).toHaveAttribute(
+    "data-active-scene",
+    "character-create",
+  );
+  const nameInput = page.getByTestId("character-name");
+  await expect(nameInput).toBeFocused();
+  await nameInput.fill("ㄱㅏ");
+  await expect(page.getByTestId("character-name-status")).toHaveText(
+    "사용할 수 있는 닉네임입니다.",
+  );
+  await expect(page.getByTestId("create-character")).toBeEnabled();
+  await page.getByTestId("create-character").tap();
+  await expect(page.getByTestId("character-slot-2")).toHaveAttribute(
+    "aria-label",
+    /ㄱㅏ/,
+  );
+  expect(failures).toEqual([]);
+});
+
 async function movePlayerToX(
   page: Page,
   targetX: number,

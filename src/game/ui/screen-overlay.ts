@@ -128,6 +128,38 @@ function textElement<K extends keyof HTMLElementTagNameMap>(
   return element;
 }
 
+let pendingCharacterNameInput: HTMLInputElement | undefined;
+
+function createCharacterNameInput(): HTMLInputElement {
+  const input = document.createElement("input");
+  input.name = "characterName";
+  input.autocomplete = "off";
+  input.autocapitalize = "off";
+  input.spellcheck = false;
+  input.maxLength = CHARACTER_NAME_MAX_LENGTH;
+  input.placeholder = "2~12자 한글 음절·자모·영문·숫자";
+  input.dataset.testid = "character-name";
+  input.autofocus = true;
+  return input;
+}
+
+function prepareCharacterNameInputForTouchTransition(): void {
+  if (document.documentElement.dataset.inputMode !== "touch") return;
+  pendingCharacterNameInput?.remove();
+  const input = createCharacterNameInput();
+  input.className = "character-name-focus-bridge";
+  document.body.append(input);
+  input.focus({ preventScroll: true });
+  pendingCharacterNameInput = input;
+}
+
+function takeCharacterNameInput(): HTMLInputElement {
+  const input = pendingCharacterNameInput ?? createCharacterNameInput();
+  pendingCharacterNameInput = undefined;
+  input.classList.remove("character-name-focus-bridge");
+  return input;
+}
+
 export function showEndingCreditsOverlay(
   onClose: (reason: EndingCreditsCloseReason) => void,
 ): OverlayHandle {
@@ -385,7 +417,10 @@ export function showCharacterSelectOverlay(
         textElement("span", `슬롯 ${slot}`, "character-slot-number"),
         textElement("strong", "+ 새 캐릭터 생성"),
       );
-      card.addEventListener("click", () => onCreate(slot));
+      card.addEventListener("click", () => {
+        prepareCharacterNameInputForTouchTransition();
+        onCreate(slot);
+      });
       slots.append(card);
       continue;
     }
@@ -489,12 +524,7 @@ export function showCharacterCreateOverlay(
   const form = document.createElement("form");
   form.className = "character-create-form";
   const nameLabel = textElement("label", "캐릭터 닉네임");
-  const nameInput = document.createElement("input");
-  nameInput.name = "characterName";
-  nameInput.autocomplete = "off";
-  nameInput.maxLength = CHARACTER_NAME_MAX_LENGTH;
-  nameInput.placeholder = "2~12자 한글·영문·숫자";
-  nameInput.dataset.testid = "character-name";
+  const nameInput = takeCharacterNameInput();
   nameLabel.append(nameInput);
 
   const nameStatus = textElement(
@@ -641,7 +671,12 @@ export function showCharacterCreateOverlay(
   );
   panel.append(form);
   const handle = replaceOverlay(panel);
-  queueMicrotask(() => nameInput.focus());
+  nameInput.focus({ preventScroll: true });
+  queueMicrotask(() => {
+    if (document.activeElement !== nameInput) {
+      nameInput.focus({ preventScroll: true });
+    }
+  });
   return handle;
 }
 

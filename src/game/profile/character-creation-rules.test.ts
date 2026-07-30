@@ -22,10 +22,23 @@ describe("character creation rules", () => {
     });
   });
 
+  it("accepts standalone and combining Korean jamo", () => {
+    expect(validateCharacterName("ㄱㅏ")).toMatchObject({
+      valid: true,
+      name: "ㄱㅏ",
+    });
+    expect(validateCharacterName("가나")).toEqual({
+      valid: true,
+      name: "가나",
+      message: "사용할 수 있는 닉네임입니다.",
+    });
+  });
+
   it("rejects names outside the length and character rules", () => {
     expect(validateCharacterName("A").valid).toBe(false);
     expect(validateCharacterName("너무_긴 닉네임입니다").valid).toBe(false);
     expect(validateCharacterName("그림자 도적").valid).toBe(false);
+    expect(validateCharacterName("도적🥷").valid).toBe(false);
   });
 
   it("uses the fallback when a stored nickname is damaged", () => {

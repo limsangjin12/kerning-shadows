@@ -880,6 +880,18 @@ html[data-input-mode="touch"]
   background: #fff4d1;
 }
 
+.character-name-focus-bridge {
+  position: fixed;
+  inset: 0 auto auto 0;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  font-size: 16px;
+  opacity: 0;
+  pointer-events: none;
+}
+
 .character-name-status,
 .creation-stat-hint {
   margin: 0;
